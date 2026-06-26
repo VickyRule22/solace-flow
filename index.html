@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Solace &middot; morning to the room</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@1,18,400;1,18,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4EEE2;
+    --cream-2:#FBF8F0;
+    --cream-deep:#ECE3D3;
+    --green:#234E45;
+    --green-700:#2C5C50;
+    --green-soft:#86A18C;
+    --assist:#EBE3D3;
+    --ink:#2A2A26;
+    --ink-soft:#6C6A61;
+    --muted:#9C978B;
+    --line:#E4DDCD;
+    --chip-bd:#CFE0D6;
+    --chip-ic:#2E6A5A;
+    --gold:#AE8843;
+    --card-bd:#E6DFCF;
+    --card-hl:#B9D2C5;
+    --send:#DCCFB7;
+    --rec:#B23A2B;
+    --amber:#B7893A;
+    --amber-bg:#FBF2DE;
+    --pink-bg:#F6EAE6;
+    --end:#C0463A;
+    --pause:#E7DEC9;
+    --wave-a:#2C6E6A;
+    --wave-b:#3E6B52;
+    --device:#1a1c19;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(900px 600px at 50% 8%, #F7F2E8 0%, #EFE7D9 55%, #E9E0D0 100%);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    color:var(--ink);overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+  .stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+
+  /* ---------- device ---------- */
+  .scaler{transform-origin:center center}
+  .phone{
+    position:relative;width:392px;height:840px;border-radius:54px;background:var(--device);padding:13px;
+    box-shadow:0 2px 2px rgba(255,255,255,.08) inset,0 40px 70px -24px rgba(40,40,30,.45),0 0 0 2px #2c2e29,0 0 0 11px #efe9dc;
+  }
+  .screenwrap{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--cream)}
+  .island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:104px;height:30px;border-radius:20px;background:#000;z-index:40}
+  .island::after{content:"";position:absolute;right:12px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:#0c1418;box-shadow:0 0 0 1px #1a2a30}
+
+  /* status bar (shared) */
+  .status{position:absolute;top:0;left:0;right:0;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;z-index:35;font-weight:700;font-size:15px;color:var(--ink)}
+  .status .time{margin-top:5px;opacity:.55}
+  .status .right{margin-top:5px;display:flex;align-items:center;gap:9px}
+  .status .replay{display:flex;align-items:center;gap:5px;font:600 11px/1 "IBM Plex Mono",monospace;letter-spacing:.14em;color:var(--muted);cursor:pointer;opacity:.8}
+  .status .replay:hover{color:var(--green)}
+  .status .replay svg{width:12px;height:12px}
+
+  /* ---------- screen track ---------- */
+  .viewport{position:absolute;inset:0;overflow:hidden;z-index:5}
+  .track{display:flex;width:300%;height:100%;transition:transform .62s cubic-bezier(.66,0,.2,1)}
+  .screen{position:relative;flex:0 0 33.3333%;height:100%;display:flex;flex-direction:column}
+  .scroll{flex:1;overflow:hidden;padding:60px 18px 96px}
+
+  /* reveal */
+  .r{opacity:0;transform:translateY(14px);filter:blur(5px);transition:opacity .5s ease, transform .55s cubic-bezier(.2,.85,.25,1), filter .5s ease}
+  .r.in{opacity:1;transform:none;filter:none}
+
+  /* ---------- shared chat bits ---------- */
+  .label{font:600 11px/1 Inter;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 4px 12px}
+  .avatar{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--green);margin-top:2px;box-shadow:0 4px 10px -4px rgba(35,78,69,.6)}
+  .assist-row{display:flex;gap:12px;align-items:flex-start;margin-bottom:8px}
+  .bubble-a{background:var(--assist);border-radius:18px;border-top-left-radius:6px;padding:13px 16px;font-size:15.5px;line-height:1.42;color:var(--ink);max-width:84%}
+  .bubble-u{margin-left:auto;background:var(--green);color:#F3EEE2;border-radius:18px;border-top-right-radius:6px;padding:13px 16px;font-size:15.5px;line-height:1.42;max-width:86%;box-shadow:0 8px 20px -12px rgba(35,78,69,.7)}
+
+  /* ---------- screen 1: reflection ---------- */
+  .verse{background:var(--green);color:#F3EEE2;border-radius:20px;padding:16px 18px 18px;margin-bottom:22px;box-shadow:0 16px 34px -20px rgba(35,78,69,.75)}
+  .verse-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .verse-top .l{font:600 10.5px/1 Inter;letter-spacing:.16em;text-transform:uppercase;color:#A9C4B7}
+  .verse-top .r{font-size:12.5px;color:#CBDDD3;font-weight:500}
+  .verse-text{font-family:Newsreader,Georgia,serif;font-style:italic;font-size:20px;line-height:1.42;letter-spacing:.01em;color:#F5F1E6}
+  .startlbl{margin:20px 4px 13px}
+  .chips{display:flex;flex-direction:column;align-items:flex-start;gap:11px}
+  .chip{display:inline-flex;align-items:center;gap:11px;background:var(--cream-2);border:1px solid var(--chip-bd);border-radius:999px;padding:12px 19px 12px 15px;font-size:14.5px;font-weight:500;color:var(--ink);cursor:pointer;box-shadow:0 3px 8px -6px rgba(40,40,30,.4);transition:transform .15s ease, box-shadow .2s ease, border-color .2s}
+  .chip:hover{transform:translateY(-1px);border-color:var(--chip-ic);box-shadow:0 8px 16px -10px rgba(46,106,90,.5)}
+  .chip svg{width:17px;height:17px;color:var(--chip-ic);flex:0 0 auto}
+  .chip .ring{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#EAF1EC;flex:0 0 auto}
+  .chip .ring svg{width:13px;height:13px}
+
+  /* ---------- screen 2: prep ---------- */
+  .filecard{display:flex;gap:13px;align-items:center;background:var(--cream-deep);border-radius:16px;padding:13px 15px;margin-bottom:14px;border:1px solid var(--line)}
+  .filecard .thumb{flex:0 0 auto;width:48px;height:48px;border-radius:10px;background:repeating-linear-gradient(45deg,#DfD6c4,#DfD6c4 5px,#E7DECE 5px,#E7DECE 10px);display:grid;place-items:center;color:var(--ink-soft)}
+  .filecard .thumb svg{width:20px;height:20px}
+  .filecard .meta .ttl{font-size:14px;font-weight:600;color:var(--ink)}
+  .filecard .meta .sub{font-size:12px;color:var(--ink-soft);margin-top:3px;line-height:1.35}
+  .goldlbl{display:flex;align-items:center;gap:7px;font:700 11px/1 Inter;letter-spacing:.13em;text-transform:uppercase;color:var(--gold);margin:18px 2px 12px}
+  .goldlbl svg{width:13px;height:13px}
+  .qcard{background:var(--cream-2);border:1px solid var(--card-bd);border-radius:16px;padding:15px 16px;margin-bottom:11px;display:flex;gap:13px;align-items:flex-start}
+  .qcard.hl{border-color:var(--card-hl);box-shadow:0 12px 26px -20px rgba(35,78,69,.5)}
+  .qnum{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:#E9E1D0;color:var(--ink-soft);display:grid;place-items:center;font-size:12.5px;font-weight:600;margin-top:1px}
+  .qcard.hl .qnum{background:var(--green);color:#F1EBDD}
+  .qbody .qq{font-size:15.5px;font-weight:600;line-height:1.32;color:var(--ink);letter-spacing:-.01em}
+  .qbody .qs{font-size:13px;color:var(--ink-soft);margin-top:6px;line-height:1.4}
+  .qacts{display:flex;gap:18px;margin-top:11px}
+  .qacts span{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);font-weight:500}
+  .qacts span.saved{color:var(--green)}
+  .qacts svg{width:14px;height:14px}
+
+  /* ---------- screen 3: in the room ---------- */
+  .rec-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+  .rec{display:flex;align-items:center;gap:9px;font:600 13px/1 "IBM Plex Mono",monospace;letter-spacing:.18em;color:var(--rec)}
+  .rec .d{width:9px;height:9px;border-radius:50%;background:var(--rec);animation:pulse 1.7s infinite}
+  .rec-time{font:500 18px/1 "IBM Plex Mono",monospace;color:var(--ink-soft)}
+  .with-lbl{font:400 11px/1 "IBM Plex Mono",monospace;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+  .with-name{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .with-name .spec{font-weight:500}
+  .with-name .mid{color:var(--muted);font-weight:400;margin:0 4px}
+  .tcard{margin-top:14px;background:var(--cream-2);border:1px solid var(--line);border-radius:20px;padding:15px 16px 12px;box-shadow:0 14px 30px -22px rgba(40,35,20,.5)}
+  .tcard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .tcard-head .l,.tcard-head .rr{font:400 11px/1 "IBM Plex Mono",monospace;letter-spacing:.18em;text-transform:uppercase}
+  .tcard-head .l{color:var(--muted)}
+  .tcard-head .rr{color:var(--green);display:flex;align-items:center;gap:6px}
+  .tcard-head .rr .ch{width:6px;height:6px;border-radius:2px;background:var(--green)}
+  .tline{margin-bottom:10px}
+  .tline .m{font:400 11px/1 "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--muted);margin-bottom:4px}
+  .tline .m b{color:var(--ink-soft);font-weight:600}
+  .tline .t{font-size:15px;line-height:1.32;color:var(--ink);letter-spacing:-.01em}
+  .tline.faint .t{color:#9b978c}
+  .curs{display:inline-block;width:9px;height:16px;background:var(--green);vertical-align:-2px;margin-left:2px;animation:blink 1s steps(1) infinite}
+  .qhead{display:flex;align-items:center;justify-content:space-between;margin:16px 2px 10px}
+  .qhead .l{font:400 11px/1 "IBM Plex Mono",monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .qhead .r2{font:400 12px/1 "IBM Plex Mono",monospace;color:var(--green)}
+  .q{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:15px;margin-bottom:8px;background:var(--cream);border:1px solid transparent}
+  .q.pink{background:var(--pink-bg)}
+  .q.active{background:var(--amber-bg);border-color:#E7CB8E}
+  .q .mk{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;margin-top:1px}
+  .q .mk.done{background:#D6E6D8}
+  .q .mk.done svg{width:12px;height:12px;stroke:var(--green);stroke-width:2.5;fill:none}
+  .q .mk.open{border:2px solid var(--amber)}
+  .q .mk.open i{width:7px;height:7px;border-radius:50%;background:var(--amber);display:block}
+  .q .qt{font-size:14.5px;line-height:1.3;color:var(--ink);letter-spacing:-.01em}
+  .q.answered .qt{color:var(--green-soft);text-decoration:line-through;text-decoration-color:rgba(134,161,140,.7)}
+  .q.active .qt{font-weight:600}
+  .q .qsub{margin-top:6px;font:400 11px/1 "IBM Plex Mono",monospace;color:var(--muted)}
+
+  /* input bar (per screen) */
+  .inputbar{position:absolute;left:0;right:0;bottom:0;z-index:20;padding:12px 16px 22px;background:linear-gradient(to top,var(--cream) 62%,rgba(244,238,226,0))}
+  .ibar{display:flex;align-items:center;gap:12px;background:var(--cream-2);border:1px solid var(--line);border-radius:999px;padding:11px 12px 11px 16px;box-shadow:0 14px 26px -18px rgba(40,35,20,.45)}
+  .ibar .clip{color:var(--ink-soft);display:flex}
+  .ibar .clip svg{width:19px;height:19px}
+  .ibar .ph{flex:1;font-size:14.5px;color:#A7A296}
+  .ibar .mic{color:var(--ink-soft);display:flex}
+  .ibar .mic svg{width:18px;height:18px}
+  .ibar .send{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--send);display:grid;place-items:center;color:#7C6B45}
+  .ibar .send svg{width:17px;height:17px}
+
+  /* screen-3 control bar */
+  .barwrap{position:absolute;left:0;right:0;bottom:0;z-index:20;padding:12px 16px 18px;background:linear-gradient(to top,var(--cream) 60%,rgba(244,238,226,0))}
+  .bar{display:flex;align-items:center;gap:13px;background:var(--cream-2);border:1px solid var(--line);border-radius:999px;padding:9px 11px;box-shadow:0 14px 26px -16px rgba(40,35,20,.5)}
+  .pausebtn{flex:0 0 auto;width:50px;height:50px;border-radius:50%;background:var(--pause);display:grid;place-items:center}
+  .pausebtn span{display:flex;gap:5px}
+  .pausebtn span i{width:5px;height:17px;border-radius:2px;background:var(--ink-soft)}
+  .wave{flex:1;height:42px;display:flex;align-items:center;justify-content:center;gap:3px;overflow:hidden}
+  .wave i{flex:0 0 4px;width:4px;height:8%;border-radius:3px;background:linear-gradient(to bottom,var(--wave-a),var(--wave-b));transition:height .09s linear}
+  .endbtn{flex:0 0 auto;background:var(--end);color:#fff;font-weight:700;font-size:15px;padding:14px 20px;border-radius:999px;box-shadow:0 8px 18px -8px rgba(192,70,58,.7)}
+
+  /* ---------- prototype controls ---------- */
+  .dock{display:flex;align-items:center;gap:14px}
+  .dock .nav{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:#fff;border:1px solid #E2DAC9;color:var(--green);cursor:pointer;box-shadow:0 4px 12px -6px rgba(40,40,30,.35);transition:.18s}
+  .dock .nav:hover{background:var(--green);color:#fff;border-color:var(--green)}
+  .dock .nav[disabled]{opacity:.32;cursor:default;pointer-events:none}
+  .dock .nav svg{width:20px;height:20px}
+  .dock .next.pulse{animation:np 1.6s ease-in-out infinite}
+  @keyframes np{0%,100%{box-shadow:0 0 0 0 rgba(35,78,69,.0)}50%{box-shadow:0 0 0 7px rgba(35,78,69,.12)}}
+  .dots{display:flex;gap:9px;align-items:center}
+  .dots b{width:8px;height:8px;border-radius:50%;background:#CFC6B4;transition:.25s;cursor:pointer}
+  .dots b.on{background:var(--green);width:22px;border-radius:6px}
+  .legend{font:500 12px/1 Inter;letter-spacing:.02em;color:#8C8576;display:flex;gap:8px;align-items:center}
+  .legend b{color:var(--green);font-weight:600}
+
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(178,58,43,.45)}70%{box-shadow:0 0 0 9px rgba(178,58,43,0)}100%{box-shadow:0 0 0 0 rgba(178,58,43,0)}}
+  @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="scaler" id="scaler">
+    <div class="phone">
+      <div class="screenwrap">
+        <div class="island"></div>
+
+        <!-- status bar -->
+        <div class="status">
+          <div class="time">9:41</div>
+          <div class="right">
+            <svg width="18" height="12" viewBox="0 0 18 12"><g fill="#2A2A26"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></g></svg>
+            <div class="replay" id="replay" title="replay this screen">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v4h4"/></svg>REPLAY
+            </div>
+          </div>
+        </div>
+
+        <div class="viewport">
+          <div class="track" id="track">
+
+            <!-- ============ SCREEN 1 : REFLECTION ============ -->
+            <section class="screen" data-name="Morning reflection">
+              <div class="scroll">
+                <div class="verse r">
+                  <div class="verse-top"><span class="l">Today's reflection</span><span class="r">Philippians 4:7</span></div>
+                  <div class="verse-text">&ldquo;The peace of God, which transcends all understanding, will guard you.&rdquo;</div>
+                </div>
+                <div class="assist-row r">
+                  <div class="avatar"></div>
+                  <div class="bubble-a">Good morning, Marcus. Let the verse sit with you a moment. When you're ready, tell me where you'd like to begin.</div>
+                </div>
+                <div class="label startlbl r">Where would you like to start</div>
+                <div class="chips">
+                  <button class="chip r adv"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg></span>Sit with this verse for a minute</button>
+                  <button class="chip r adv"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 6.6a5 5 0 0 0-8.8-1.6A5 5 0 0 0 3.2 6.6c-1 2.6.4 5 2.2 6.8L12 19.5l6.6-6.1c1.8-1.8 3.2-4.2 2.2-6.8Z"/></svg></span>Pray for someone I love</button>
+                  <button class="chip r adv hot"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5 20.5 10.5a4.95 4.95 0 0 0-7-7L3.5 13.5a4.95 4.95 0 0 0 7 7Z"/><path d="m7 10 7 7"/></svg></span>I'm struggling with my back today</button>
+                  <button class="chip r adv"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4Z"/></svg></span>Set an intention for today</button>
+                </div>
+              </div>
+              <div class="inputbar r">
+                <div class="ibar">
+                  <span class="clip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8-8a3.3 3.3 0 0 1 4.7 4.7l-8 8a1.6 1.6 0 0 1-2.3-2.3L13.5 11"/></svg></span>
+                  <span class="ph">Share what's on your heart&hellip;</span>
+                  <span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+                  <span class="send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 16-7-7 16-2.5-6.5L4 12Z"/></svg></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- ============ SCREEN 2 : PREP ============ -->
+            <section class="screen" data-name="Prep for the visit">
+              <div class="scroll">
+                <div class="filecard r">
+                  <div class="thumb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></svg></div>
+                  <div class="meta"><div class="ttl">Visit summary &middot; Apr 22.png</div><div class="sub">Uploaded &middot; 2.1 MB &middot; screenshot from MyChart</div></div>
+                </div>
+                <div class="r"><div class="bubble-u">I'm seeing Dr. Reyes Friday for a follow-up. Help me get ready &mdash; what should I be asking?</div></div>
+                <div class="assist-row r" style="margin-top:14px">
+                  <div class="avatar"></div>
+                  <div class="bubble-a">I read your visit summary. Three things stood out worth pressing on at Friday's appointment:</div>
+                </div>
+                <div class="goldlbl r"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.9 6.1 21.2l1.3-6.6L2.5 9.4l6.6-.8Z"/></svg>Questions for Dr. Reyes</div>
+
+                <div class="qcard hl r">
+                  <div class="qnum">1</div>
+                  <div class="qbody">
+                    <div class="qq">What does &ldquo;moderate disc bulge at L4&ndash;L5&rdquo; mean for my long-term recovery?</div>
+                    <div class="qs">The summary uses clinical language but doesn't set expectations.</div>
+                    <div class="qacts"><span class="saved"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>Saved</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg>Share</span></div>
+                  </div>
+                </div>
+                <div class="qcard r">
+                  <div class="qnum">2</div>
+                  <div class="qbody">
+                    <div class="qq">Should I still be on light duty in week 5, or can I gradually return?</div>
+                    <div class="qs">Your light-duty letter expires May 16. No clear plan in the notes.</div>
+                    <div class="qacts"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg>Save</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7"/></svg>Share</span></div>
+                  </div>
+                </div>
+                <div class="qcard r">
+                  <div class="qnum">3</div>
+                  <div class="qbody">
+                    <div class="qq">Is six weeks of ibuprofen safe at my dose, or do we step down?</div>
+                    <div class="qs">Daily NSAID use since March. Worth a gut + kidney check.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="inputbar r">
+                <div class="ibar">
+                  <span class="clip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8-8a3.3 3.3 0 0 1 4.7 4.7l-8 8a1.6 1.6 0 0 1-2.3-2.3L13.5 11"/></svg></span>
+                  <span class="ph">Reply to Solace&hellip;</span>
+                  <span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+                  <span class="send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 16-7-7 16-2.5-6.5L4 12Z"/></svg></span>
+                </div>
+              </div>
+            </section>
+
+            <!-- ============ SCREEN 3 : IN THE ROOM ============ -->
+            <section class="screen" data-name="In the room">
+              <div class="scroll">
+                <div class="r"><div class="rec-row"><div class="rec"><span class="d"></span>RECORDING</div><div class="rec-time">12:47</div></div></div>
+                <div class="r"><div class="with-lbl">In the room with</div><div class="with-name">Dr. Reyes<span class="mid">&middot;</span><span class="spec">orthopedics</span></div></div>
+
+                <div class="tcard r">
+                  <div class="tcard-head"><div class="l">Live transcript</div><div class="rr"><span class="ch"></span>On device</div></div>
+                  <div class="tline r"><div class="m">12:31 &middot; <b>DR. REYES</b></div><div class="t">&hellip;the bulge at L4&ndash;L5 is moderate, and the good news is the disc itself looks stable since April.</div></div>
+                  <div class="tline r"><div class="m">12:39 &middot; <b>MARCUS</b></div><div class="t">So am I doing more harm staying active?</div></div>
+                  <div class="tline r"><div class="m">12:42 &middot; <b>DR. REYES</b></div><div class="t">No. Movement helps here. We'll keep light duty two more weeks, then ease you back.</div></div>
+                  <div class="tline faint r"><div class="m">12:47 &middot; <b>DR. REYES</b></div><div class="t"><span id="typetarget"></span><span class="curs" id="curs" style="display:none"></span></div></div>
+                </div>
+
+                <div class="r"><div class="qhead"><div class="l">Your questions</div><div class="r2">2 of 3 covered</div></div></div>
+                <div class="q answered r"><div class="mk done"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div><div><div class="qt">What does &ldquo;moderate disc bulge at L4&ndash;L5&rdquo; mean for recovery?</div><div class="qsub">Answered &middot; jump to 3:42</div></div></div>
+                <div class="q answered pink r"><div class="mk done"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div><div><div class="qt">Light duty in week 5, or can I gradually return?</div><div class="qsub">Answered &middot; jump to 8:15</div></div></div>
+                <div class="q active r"><div class="mk open"><i></i></div><div><div class="qt">Is six weeks of ibuprofen safe, or do we step down?</div></div></div>
+              </div>
+              <div class="barwrap r">
+                <div class="bar">
+                  <div class="pausebtn"><span><i></i><i></i></span></div>
+                  <div class="wave" id="wave"></div>
+                  <div class="endbtn">End visit</div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- prototype dock -->
+  <div class="dock">
+    <button class="nav prev" id="prev" disabled aria-label="previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="dots" id="dots"><b class="on"></b><b></b><b></b></div>
+    <button class="nav next pulse" id="next" aria-label="next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <div class="legend"><b id="legend-name">Morning reflection</b><span>&middot; tap a starter, or use the arrows</span></div>
+</div>
+
+<script>
+(function(){
+  function fit(){
+    var s = Math.min((window.innerWidth-40)/392, (window.innerHeight-150)/840, 1.0);
+    document.getElementById('scaler').style.transform = 'scale('+s+')';
+  }
+  window.addEventListener('resize', fit); fit();
+
+  var track = document.getElementById('track');
+  var screens = Array.prototype.slice.call(track.children);
+  var dots = Array.prototype.slice.call(document.getElementById('dots').children);
+  var prev = document.getElementById('prev'), next = document.getElementById('next');
+  var legend = document.getElementById('legend-name');
+  var idx = -1, timers = [];
+
+  /* waveform (screen 3) */
+  var wave = document.getElementById('wave'), BARS=40, bars=[];
+  for(var i=0;i<BARS;i++){var b=document.createElement('i');wave.appendChild(b);bars.push(b);}
+  var live=false, gate=1, gt=1, t0=0;
+  function rnd(s){return (Math.sin(s*127.1)*43758.5453)%1;}
+  function waveFrame(ts){
+    if(!t0)t0=ts; var t=ts-t0;
+    if(Math.floor(t/420)!==Math.floor((t-16)/420)){ gt=(Math.abs(rnd(Math.floor(t/420)))<0.16)?0.18:(0.6+Math.abs(rnd(Math.floor(t/420)+7))*0.4); }
+    gate+=(gt-gate)*0.12; var amp=live?gate:0.0, c=(BARS-1)/2;
+    for(var k=0;k<BARS;k++){ var env=1-Math.pow(Math.abs(k-c)/c,1.7)*0.55;
+      var v=(Math.sin(t*0.013+k*0.55)*0.45+Math.sin(t*0.027+k*1.3+2)*0.35+Math.sin(t*0.006+k*0.2)*0.2)*0.5+0.5;
+      bars[k].style.height=(Math.max(0.06,Math.min(1,0.1+v*0.9*env*amp))*100).toFixed(1)+'%'; }
+    requestAnimationFrame(waveFrame);
+  }
+  requestAnimationFrame(waveFrame);
+
+  var DASH=String.fromCharCode(8212), ELL=String.fromCharCode(8230);
+  var TYPE="and let's recheck the kidney panel before we refill anything "+DASH+" no need to step down today"+ELL;
+  function typeOut(str,el,sp){ var i=0; (function step(){ if(i<=str.length){ el.textContent=str.slice(0,i); i++; timers.push(setTimeout(step,sp)); } })(); }
+
+  function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
+
+  function reveal(screen){
+    var els = screen.querySelectorAll('.r');
+    els.forEach(function(e){ e.classList.remove('in'); });
+    void screen.offsetWidth;
+    els.forEach(function(e,i){ timers.push(setTimeout(function(){ e.classList.add('in'); }, 120 + i*105)); });
+    return 120 + els.length*105;
+  }
+
+  function startLive(after){
+    timers.push(setTimeout(function(){
+      live=true; var c=document.getElementById('curs'); c.style.display='inline-block';
+      typeOut(TYPE, document.getElementById('typetarget'), 36);
+    }, after));
+  }
+
+  function goTo(n){
+    n = Math.max(0, Math.min(2, n));
+    if(n===idx) { /* allow replay */ }
+    clearTimers();
+    idx = n;
+    track.style.transform = 'translateX(-'+(n*33.3333)+'%)';
+    dots.forEach(function(d,i){ d.classList.toggle('on', i===n); });
+    prev.disabled = n===0;
+    next.disabled = n===2;
+    next.classList.toggle('pulse', n<2);
+    legend.textContent = screens[n].getAttribute('data-name');
+    // reset screen-3 live state
+    live=false; document.getElementById('typetarget').textContent=''; document.getElementById('curs').style.display='none';
+    var dur = reveal(screens[n]);
+    if(n===2){ startLive(dur+250); }
+  }
+
+  prev.addEventListener('click', function(){ goTo(idx-1); });
+  next.addEventListener('click', function(){ goTo(idx+1); });
+  dots.forEach(function(d,i){ d.addEventListener('click', function(){ goTo(i); }); });
+  document.getElementById('replay').addEventListener('click', function(){ goTo(idx); });
+  document.querySelectorAll('.adv').forEach(function(c){ c.addEventListener('click', function(){ goTo(1); }); });
+  document.addEventListener('keydown', function(e){ if(e.key==='ArrowRight') goTo(idx+1); if(e.key==='ArrowLeft') goTo(idx-1); });
+
+  goTo(0);
+})();
+</script>
+</body>
+</html>
