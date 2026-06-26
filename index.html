@@ -327,7 +327,7 @@
     <div class="dots" id="dots"><b class="on"></b><b></b><b></b></div>
     <button class="nav next pulse" id="next" aria-label="next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>
-  <div class="legend"><b id="legend-name">Morning reflection</b><span>&middot; tap a starter, or use the arrows</span></div>
+  <div class="legend"><b id="legend-name">Morning reflection</b><span>&middot; playing on a loop &mdash; tap the arrows anytime</span></div>
 </div>
 
 <script>
@@ -344,6 +344,12 @@
   var prev = document.getElementById('prev'), next = document.getElementById('next');
   var legend = document.getElementById('legend-name');
   var idx = -1, timers = [];
+  /* auto-play loop: dwell per screen (ms), long enough for each reveal + screen-3 typing */
+  var DWELL = [4800, 6200, 7800], autoTimer = null;
+  function schedule(){
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(function(){ goTo((idx + 1) % 3); }, DWELL[idx] || 5000);
+  }
 
   /* waveform (screen 3) */
   var wave = document.getElementById('wave'), BARS=40, bars=[];
@@ -397,6 +403,7 @@
     live=false; document.getElementById('typetarget').textContent=''; document.getElementById('curs').style.display='none';
     var dur = reveal(screens[n]);
     if(n===2){ startLive(dur+250); }
+    schedule();
   }
 
   prev.addEventListener('click', function(){ goTo(idx-1); });
