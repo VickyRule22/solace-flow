@@ -39,17 +39,28 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
   body{
-    background:radial-gradient(900px 600px at 50% 8%, #F7F2E8 0%, #EFE7D9 55%, #E9E0D0 100%);
+    background:#0e1a15;
     font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     color:var(--ink);overflow:hidden;-webkit-font-smoothing:antialiased;
   }
-  .stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+  /* --- consultation footage background --- */
+  .bg-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
+    filter:saturate(.82) contrast(1.02) brightness(.88) blur(2px);transform:scale(1.06)}
+  .scrim{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(118% 92% at 50% 44%, rgba(16,26,22,0) 30%, rgba(15,24,20,.5) 78%, rgba(11,18,15,.8) 100%),
+      linear-gradient(180deg, rgba(14,24,19,.45) 0%, rgba(14,24,19,.12) 24%, rgba(14,24,19,.34) 70%, rgba(11,18,15,.72) 100%),
+      linear-gradient(0deg, rgba(70,107,82,.14), rgba(70,107,82,.14));
+  }
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.45;mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+  .stage{position:fixed;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
 
   /* ---------- device ---------- */
   .scaler{transform-origin:center center}
   .phone{
     position:relative;width:392px;height:840px;border-radius:54px;background:var(--device);padding:13px;
-    box-shadow:0 2px 2px rgba(255,255,255,.08) inset,0 40px 70px -24px rgba(40,40,30,.45),0 0 0 2px #2c2e29,0 0 0 11px #efe9dc;
+    box-shadow:0 2px 2px rgba(255,255,255,.08) inset,0 45px 85px -20px rgba(0,0,0,.62),0 0 0 2px #2c2e29,0 0 0 11px #0b0f0d;
   }
   .screenwrap{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:var(--cream)}
   .island{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:104px;height:30px;border-radius:20px;background:#000;z-index:40}
@@ -182,14 +193,19 @@
   .dots{display:flex;gap:9px;align-items:center}
   .dots b{width:8px;height:8px;border-radius:50%;background:#CFC6B4;transition:.25s;cursor:pointer}
   .dots b.on{background:var(--green);width:22px;border-radius:6px}
-  .legend{font:500 12px/1 Inter;letter-spacing:.02em;color:#8C8576;display:flex;gap:8px;align-items:center}
-  .legend b{color:var(--green);font-weight:600}
+  .legend{font:500 12px/1 Inter;letter-spacing:.02em;color:#C9C8BC;display:flex;gap:8px;align-items:center;text-shadow:0 1px 6px rgba(0,0,0,.4)}
+  .legend b{color:#EDEAD9;font-weight:600}
 
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(178,58,43,.45)}70%{box-shadow:0 0 0 9px rgba(178,58,43,0)}100%{box-shadow:0 0 0 0 rgba(178,58,43,0)}}
   @keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
 </style>
 </head>
 <body>
+<video class="bg-video" autoplay muted loop playsinline poster="comforter-bg-poster.jpg">
+  <source src="comforter-bg.mp4" type="video/mp4">
+</video>
+<div class="scrim"></div>
+<div class="grain"></div>
 <div class="stage">
   <div class="scaler" id="scaler">
     <div class="phone">
